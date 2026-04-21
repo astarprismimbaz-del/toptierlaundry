@@ -277,6 +277,33 @@
   .form-group textarea { resize: vertical; min-height: 80px; }
   .form-group select { cursor: pointer; }
 
+  /* ORDER BUILDER */
+  .order-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0.7rem 1rem; border-bottom:1px solid var(--blue-pale);
+    gap:0.5rem; flex-wrap:wrap; transition:background 0.15s;
+  }
+  .order-row:last-of-type { border-bottom:none; }
+  .order-row.active { background:#f0f8ff; }
+  .order-label { font-size:0.9rem; color:var(--text-dark); flex:1; min-width:140px; }
+  .order-rate { font-size:0.78rem; color:var(--text-muted); margin-left:6px; }
+  .order-controls { display:flex; align-items:center; gap:6px; }
+  .qty-btn {
+    width:28px; height:28px; border:1px solid var(--blue-light);
+    background:var(--white); border-radius:2px; font-size:1.1rem;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    color:var(--blue-mid); transition:all 0.15s; line-height:1;
+  }
+  .qty-btn:hover { background:var(--blue-pale); border-color:var(--blue-bright); }
+  .qty-input {
+    width:48px; text-align:center; padding:0.3rem 0.25rem;
+    border:1px solid var(--blue-light); border-radius:2px;
+    font-family:'Jost',sans-serif; font-size:0.9rem; color:var(--text-dark);
+    background:var(--off-white);
+  }
+  .qty-input:focus { border-color:var(--blue-bright); outline:none; background:var(--white); }
+  .qty-unit { font-size:0.75rem; color:var(--text-muted); min-width:28px; }
+
   /* PAYMENT */
   .payment-section { margin-top: 1.5rem; }
   .payment-title {
@@ -654,21 +681,136 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Service type</label>
-            <select id="b-service">
-              <option value="">Select a service...</option>
-              <option>Wash &amp; Fold (Ksh 80/kg)</option>
-              <option>Wash, Iron &amp; Fold (Ksh 100/kg)</option>
-              <option>Carpet Cleaning (Ksh 200/m²)</option>
-              <option>Duvet — 3×6 (Ksh 350)</option>
-              <option>Duvet — 4×6 (Ksh 450)</option>
-              <option>Duvet — 5×6 (Ksh 500)</option>
-              <option>Duvet — 6×6 &amp; above (Ksh 550)</option>
-              <option>Men's Suit (Ksh 700 — dry clean + press)</option>
-              <option>Ladies' Suit / Blazer Set (Ksh 600 — dry clean + press)</option>
-              <option>Curtains / Drapes (Ksh 150/panel)</option>
-              <option>Multiple services</option>
-            </select>
+            <label>Select services &amp; quantities</label>
+            <div id="order-builder" style="border:1px solid var(--blue-light);border-radius:4px;overflow:hidden;margin-top:0.25rem;">
+
+              <!-- category headers + rows -->
+              <div style="background:#e3f2fd;padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#1565c0;">Laundry (by weight)</div>
+
+              <div class="order-row" data-name="Wash &amp; Fold" data-unit="kg" data-price="80" data-type="weight">
+                <div class="order-label">Wash &amp; Fold <span class="order-rate">Ksh 80/kg</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">kg</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div class="order-row" data-name="Wash, Iron &amp; Fold" data-unit="kg" data-price="100" data-type="weight">
+                <div class="order-label">Wash, Iron &amp; Fold <span class="order-rate">Ksh 100/kg</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">kg</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div style="background:#e3f2fd;padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#1565c0;">Carpets</div>
+
+              <div class="order-row" data-name="Carpet Cleaning" data-unit="m²" data-price="200" data-type="area">
+                <div class="order-label">Carpet Cleaning <span class="order-rate">Ksh 200/m²</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">m²</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div style="background:#e3f2fd;padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#1565c0;">Duvets</div>
+
+              <div class="order-row" data-name="Duvet 3×6" data-unit="pcs" data-price="350" data-type="unit">
+                <div class="order-label">Duvet 3×6 <span class="order-rate">Ksh 350</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div class="order-row" data-name="Duvet 4×6" data-unit="pcs" data-price="450" data-type="unit">
+                <div class="order-label">Duvet 4×6 <span class="order-rate">Ksh 450</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div class="order-row" data-name="Duvet 5×6" data-unit="pcs" data-price="500" data-type="unit">
+                <div class="order-label">Duvet 5×6 <span class="order-rate">Ksh 500</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div class="order-row" data-name="Duvet 6×6+" data-unit="pcs" data-price="550" data-type="unit">
+                <div class="order-label">Duvet 6×6 &amp; above <span class="order-rate">Ksh 550</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div style="background:#e3f2fd;padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#1565c0;">Suits</div>
+
+              <div class="order-row" data-name="Men's Suit (dry clean + press)" data-unit="pcs" data-price="700" data-type="unit">
+                <div class="order-label">Men's Suit <span class="order-rate">Ksh 700</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div class="order-row" data-name="Ladies' Suit / Blazer Set (dry clean + press)" data-unit="pcs" data-price="600" data-type="unit">
+                <div class="order-label">Ladies' Suit / Blazer Set <span class="order-rate">Ksh 600</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">pcs</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <div style="background:#e3f2fd;padding:0.5rem 1rem;font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#1565c0;">Curtains</div>
+
+              <div class="order-row" data-name="Curtain / Drape" data-unit="panels" data-price="150" data-type="unit">
+                <div class="order-label">Curtain / Drape <span class="order-rate">Ksh 150/panel</span></div>
+                <div class="order-controls">
+                  <button type="button" class="qty-btn" onclick="changeQty(this,-1)">−</button>
+                  <input type="number" class="qty-input" value="0" min="0" step="1" oninput="recalc()">
+                  <span class="qty-unit">panels</span>
+                  <button type="button" class="qty-btn" onclick="changeQty(this,1)">+</button>
+                </div>
+              </div>
+
+              <!-- TOTAL -->
+              <div id="order-total-box" style="display:none;background:#0a2a4a;padding:1rem 1.25rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                  <div>
+                    <div style="font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:2px;">Estimated total</div>
+                    <div id="order-summary-text" style="font-size:0.8rem;color:rgba(255,255,255,0.6);line-height:1.5;max-width:320px;"></div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div id="order-total-num" style="font-size:1.6rem;font-weight:600;color:#c8a96e;"></div>
+                    <div id="delivery-note" style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:2px;"></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div id="order-error" style="display:none;color:#c62828;font-size:0.82rem;margin-top:0.4rem;">Please add at least one service to your order.</div>
           </div>
           <div class="form-group">
             <label>Pickup location (Kisumu)</label>
@@ -932,27 +1074,95 @@
     input.value = v.replace(/(.{4})/g, '$1 ').trim();
   }
 
+  function changeQty(btn, delta) {
+    const input = btn.parentElement.querySelector('.qty-input');
+    const val = Math.max(0, parseInt(input.value || 0) + delta);
+    input.value = val;
+    recalc();
+  }
+
+  function recalc() {
+    const rows = document.querySelectorAll('.order-row');
+    let total = 0; let lines = []; let totalKg = 0;
+    rows.forEach(row => {
+      const input = row.querySelector('.qty-input');
+      const qty = parseInt(input.value || 0);
+      const price = parseInt(row.dataset.price);
+      const name = row.dataset.name;
+      const unit = row.dataset.unit;
+      if (qty > 0) {
+        const sub = qty * price;
+        total += sub;
+        lines.push(`${name} × ${qty} ${unit} = Ksh ${sub.toLocaleString()}`);
+        if (row.dataset.type === 'weight') totalKg += qty;
+        row.classList.add('active');
+      } else {
+        row.classList.remove('active');
+      }
+    });
+    const box = document.getElementById('order-total-box');
+    if (total > 0) {
+      box.style.display = 'block';
+      document.getElementById('order-total-num').textContent = 'Ksh ' + total.toLocaleString();
+      document.getElementById('order-summary-text').innerHTML = lines.join('<br>');
+      const delNote = document.getElementById('delivery-note');
+      if (totalKg >= 15) {
+        delNote.textContent = '+ Free pickup & delivery';
+        delNote.style.color = '#5DCAA5';
+      } else {
+        delNote.textContent = '+ Ksh 100 pickup & delivery';
+        delNote.style.color = 'rgba(255,255,255,0.5)';
+      }
+    } else {
+      box.style.display = 'none';
+    }
+  }
+
+  function getOrderSummary() {
+    const rows = document.querySelectorAll('.order-row');
+    let lines = []; let total = 0;
+    rows.forEach(row => {
+      const qty = parseInt(row.querySelector('.qty-input').value || 0);
+      if (qty > 0) {
+        const price = parseInt(row.dataset.price);
+        const sub = qty * price;
+        total += sub;
+        lines.push(`${row.dataset.name} × ${qty} ${row.dataset.unit} (Ksh ${sub.toLocaleString()})`);
+      }
+    });
+    return { lines, total };
+  }
+
   function submitBooking() {
     const name = document.getElementById('b-name').value.trim();
     const phone = document.getElementById('b-phone').value.trim();
-    const service = document.getElementById('b-service').value;
     const location = document.getElementById('b-location').value.trim();
     const date = document.getElementById('b-date').value;
     const time = document.getElementById('b-time').value;
     const notes = document.getElementById('b-notes').value.trim();
     const mpesaCode = selectedPay === 'mpesa' ? (document.getElementById('mpesa-code').value.trim().toUpperCase()) : '';
+    const { lines, total } = getOrderSummary();
 
-    if (!name || !phone || !service || !location || !date || !time) {
+    if (!name || !phone || !location || !date || !time) {
       alert('Please fill in all required fields before confirming your booking.');
       return;
     }
+    if (lines.length === 0) {
+      document.getElementById('order-error').style.display = 'block';
+      return;
+    }
+    document.getElementById('order-error').style.display = 'none';
     if (selectedPay === 'mpesa' && !mpesaCode) {
       alert('Please enter your M-Pesa transaction code before confirming.');
       return;
     }
 
+    const serviceText = lines.join(', ');
     const booking = {
-      id: Date.now(), name, phone, service, location, date, time, notes,
+      id: Date.now(), name, phone,
+      service: serviceText,
+      total: 'Ksh ' + total.toLocaleString(),
+      location, date, time, notes,
       payment: selectedPay,
       mpesaCode: mpesaCode || '—',
       submitted: new Date().toLocaleString('en-KE', {timeZone:'Africa/Nairobi'})
@@ -964,7 +1174,8 @@
       to_email: 'astarprismimbaz@gmail.com',
       client_name: name,
       client_phone: phone,
-      service: service,
+      service: serviceText,
+      total: 'Ksh ' + total.toLocaleString(),
       location: location,
       date: date,
       time: time,
@@ -1055,7 +1266,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
           <div>
             <div style="font-size:0.95rem;font-weight:600;color:#0a2a4a;">${b.name}</div>
-            <div style="font-size:0.8rem;color:#1565c0;">${b.phone} &nbsp;·&nbsp; ${b.payment.toUpperCase()}</div>
+            <div style="font-size:0.8rem;color:#1565c0;">${b.phone} &nbsp;·&nbsp; ${b.payment.toUpperCase()} &nbsp;·&nbsp; <strong style="color:#0a7c3e;">${b.total || ''}</strong></div>
           </div>
           <div style="font-size:0.75rem;color:#5c7a9a;text-align:right;">${b.submitted}</div>
         </div>
